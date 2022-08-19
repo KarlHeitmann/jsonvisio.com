@@ -2,14 +2,12 @@ import { CanvasDirection, NodeData, EdgeData } from "reaflow";
 import { parser } from "src/utils/json-editor-parser";
 
 export function getEdgeNodes(
-  graph: string,
+  elements: any,
   isExpanded: boolean = true
 ): {
   nodes: NodeData[];
   edges: EdgeData[];
 } {
-  const elements = parser(JSON.parse(graph));
-
   let nodes: NodeData[] = [],
     edges: EdgeData[] = [];
 

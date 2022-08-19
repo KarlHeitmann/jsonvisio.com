@@ -8,6 +8,7 @@ import { Canvas, EdgeData, ElkRoot, NodeData, NodeProps } from "reaflow";
 import { CustomNode } from "src/components/CustomNode";
 import { NodeModal } from "src/containers/Modals/NodeModal";
 import { getEdgeNodes } from "src/containers/Editor/LiveEditor/helpers";
+import { flattenTree, extractTree } from "src/utils/json-editor-parser";
 import useConfig from "src/hooks/store/useConfig";
 import styled from "styled-components";
 import shallow from "zustand/shallow";
@@ -40,6 +41,7 @@ const MemoizedGraph = React.memo(function Layout({
 }: LayoutProps) {
   const json = useConfig((state) => state.json);
   const [nodes, setNodes] = React.useState<NodeData[]>([]);
+  const [mainTree, setMainTree] = React.useState([]);
   const [edges, setEdges] = React.useState<EdgeData[]>([]);
   const [size, setSize] = React.useState({
     width: 2000,
@@ -53,8 +55,15 @@ const MemoizedGraph = React.memo(function Layout({
   );
 
   React.useEffect(() => {
-    const { nodes, edges } = getEdgeNodes(json, expand);
+    let parsedJson = JSON.parse(json)
+    if (!Array.isArray(parsedJson)) parsedJson = [parsedJson];
+    // debugger
+    const mt = extractTree(parsedJson);
+    const flatTree = flattenTree(mt);
+    const { nodes, edges } = getEdgeNodes(flatTree, expand);
+    // debugger;
 
+    setMainTree(mt);
     setNodes(nodes);
     setEdges(edges);
   }, [json, expand]);
@@ -76,7 +85,17 @@ const MemoizedGraph = React.memo(function Layout({
   const handleNodeClick = React.useCallback(
     (e: React.MouseEvent<SVGElement>, props: NodeProps) => {
       setSelectedNode(props.properties.text);
-      openModal();
+      debugger
+      // if (navigationMode) {
+        const subTree = searchSubTree(mainTree, props.id);
+        if (subTree.length) {
+          const flatTree = flattenTree(subTree)
+          const { nodes, edges } = getEdgeNodes(flatTree, expand);
+          setNodes(nodes);
+          setEdges(edges);
+        }
+      // }
+      // openModal();
     },
     [openModal, setSelectedNode]
   );
@@ -147,3 +166,17 @@ export const Graph = ({ isWidget = false }: { isWidget?: boolean }) => {
     </>
   );
 };
+
+const searchSubTree = (trees, id) => {
+  for (let i=0; i<trees.length; i++) {
+    let tree = trees[i];
+    const cond = tree.id == id
+    if (cond) return [tree];
+  }
+  for (let i=0; i<trees.length; i++) {
+    let tree = trees[i];
+    let result = searchSubTree(tree.children, id)
+    if (result.length) return result
+  }
+  return []
+}
