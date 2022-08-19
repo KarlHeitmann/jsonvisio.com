@@ -14,6 +14,8 @@ import styled from "styled-components";
 import shallow from "zustand/shallow";
 
 interface LayoutProps {
+  mainTree: any;
+  setMainTree: any;
   isWidget: boolean;
   openModal: () => void;
   setSelectedNode: (node: object) => void;
@@ -35,13 +37,14 @@ const StyledEditorWrapper = styled.div<{ isWidget: boolean }>`
 `;
 
 const MemoizedGraph = React.memo(function Layout({
+  mainTree,
+  setMainTree,
   isWidget,
   openModal,
   setSelectedNode,
 }: LayoutProps) {
   const json = useConfig((state) => state.json);
   const [nodes, setNodes] = React.useState<NodeData[]>([]);
-  const [mainTree, setMainTree] = React.useState([]);
   const [edges, setEdges] = React.useState<EdgeData[]>([]);
   const [size, setSize] = React.useState({
     width: 2000,
@@ -146,12 +149,15 @@ const MemoizedGraph = React.memo(function Layout({
 export const Graph = ({ isWidget = false }: { isWidget?: boolean }) => {
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [selectedNode, setSelectedNode] = React.useState<object>({});
+  const [mainTree, setMainTree] = React.useState([]);
 
   const openModal = React.useCallback(() => setModalVisible(true), []);
 
   return (
     <>
       <MemoizedGraph
+        mainTree={mainTree}
+        setMainTree={setMainTree}
         openModal={openModal}
         setSelectedNode={setSelectedNode}
         isWidget={isWidget}
