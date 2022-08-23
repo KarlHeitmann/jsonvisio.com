@@ -88,10 +88,10 @@ export const flattenTree = tree => {
   let res:any;
   if (tree[0].parent_id != null) {
     const parent_node = {
-      id: tree[0].parent_id, text: "parent", parent: true
+      id: tree[0].parent_id, text: "..", parent: true
     }
     const parent_relation = {
-      id: `e${tree[0].id}-${tree[0].parent_id}`, from: tree[0].id, to: tree[0].parent_id
+      id: `e${tree[0].id}-${tree[0].parent_id}`, to: tree[0].id, from: tree[0].parent_id
     }
     res = [parent_node, ...flatten(tree), parent_relation, ...relationships(tree)];
   } else {
